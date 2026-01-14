@@ -1,10 +1,9 @@
 import { Metadata } from 'next';
 import { getDocs, getCategories, getDocContent, getCategoryFile, getFiles } from '@/lib/api';
 import { generateDocMetadata, extractDescription } from '@/lib/metadata';
-import Sidebar from '@/components/Sidebar';
-import Header from '@/components/Header';
 import MarkdownContent from '@/components/MarkdownContent';
 import Pagination from '@/components/Pagination';
+import LayoutClient from '@/components/LayoutClient';
 import { notFound } from 'next/navigation';
 import { DocFile } from '@/lib/api';
 
@@ -68,18 +67,12 @@ export default async function DocPage({ params }: PageProps) {
       const doc = await getDocContent(filename);
       
       return (
-        <div className="layout">
-          <Header />
-          <Sidebar docs={docs} categories={categories} categoryFiles={categoryFiles} />
-          <div className="main-wrapper">
-            <main className="main-content">
-              <div className="content-header">
-                <h1 className="page-title">{doc.title}</h1>
-              </div>
-              <MarkdownContent content={doc.content} />
-            </main>
+        <LayoutClient docs={docs} categories={categories} categoryFiles={categoryFiles}>
+          <div className="content-header">
+            <h1 className="page-title">{doc.title}</h1>
           </div>
-        </div>
+          <MarkdownContent content={doc.content} />
+        </LayoutClient>
       );
     } catch {
       notFound();
@@ -93,26 +86,20 @@ export default async function DocPage({ params }: PageProps) {
       const file = await getCategoryFile(category, fileId);
       
       return (
-        <div className="layout">
-          <Header />
-          <Sidebar docs={docs} categories={categories} categoryFiles={categoryFiles} />
-          <div className="main-wrapper">
-            <main className="main-content">
-              <div className="content-header">
-                <div className="breadcrumb">
-                </div>
-                <h1 className="page-title">{file.title.charAt(0).toUpperCase() + file.title.slice(1)}</h1>
-                {file.description && <p className="page-description">{file.description.charAt(0).toUpperCase() + file.description.slice(1)}</p>}
-              </div>
-              <MarkdownContent content={file.content} />
-              <Pagination 
-                previousFile={file.previousFile} 
-                nextFile={file.nextFile}
-                category={category}
-              />
-            </main>
+        <LayoutClient docs={docs} categories={categories} categoryFiles={categoryFiles}>
+          <div className="content-header">
+            <div className="breadcrumb">
+            </div>
+            <h1 className="page-title">{file.title.charAt(0).toUpperCase() + file.title.slice(1)}</h1>
+            {file.description && <p className="page-description">{file.description.charAt(0).toUpperCase() + file.description.slice(1)}</p>}
           </div>
-        </div>
+          <MarkdownContent content={file.content} />
+          <Pagination 
+            previousFile={file.previousFile} 
+            nextFile={file.nextFile}
+            category={category}
+          />
+        </LayoutClient>
       );
     } catch {
       notFound();

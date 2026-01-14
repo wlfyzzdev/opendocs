@@ -1,7 +1,6 @@
 import { getDocs, getCategories, getDocContent, getFiles } from '@/lib/api';
-import Sidebar from '@/components/Sidebar';
-import Header from '@/components/Header';
 import MarkdownContent from '@/components/MarkdownContent';
+import LayoutClient from '@/components/LayoutClient';
 import { DocFile } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
@@ -23,24 +22,22 @@ async function getNavData() {
 export default async function Home() {
   const { docs, categories, categoryFiles } = await getNavData();
   
-  let content = '# Documentation Hub\n\nWelcome to your documentation hub. Create an `index.md` file in the `files/` directory to get started.';
+  let content = '# Hub\n\nWelcome to openDocs hub. Create an `index.md` file in the `files/` directory to get started.';
   
   try {
     const indexDoc = await getDocContent('index');
     content = indexDoc.content;
   } catch {
-    // Use default content
+    try {
+      const defaultDoc = await getDocContent('default');
+      content = defaultDoc.content;
+    } catch {
+    }
   }
 
   return (
-    <div className="layout">
-      <Header />
-      <Sidebar docs={docs} categories={categories} categoryFiles={categoryFiles} />
-      <div className="main-wrapper">
-        <main className="main-content">
-          <MarkdownContent content={content} />
-        </main>
-      </div>
-    </div>
+    <LayoutClient docs={docs} categories={categories} categoryFiles={categoryFiles}>
+      <MarkdownContent content={content} />
+    </LayoutClient>
   );
 }

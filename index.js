@@ -97,7 +97,7 @@ async function scanForNewFiles() {
     
     for (const file of markdownFiles) {
         const existing = db.getData('files', '*', { where: `path = '${file.relPath.replace(/'/g, "''")}'`, silent: true });
-        if (existing.length > 0) {
+        if (existing.length > 0 || file.name === 'default.md') {
             continue;
         }
         

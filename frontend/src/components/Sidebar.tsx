@@ -9,9 +9,10 @@ interface SidebarProps {
   docs: DocInfo[];
   categories: string[];
   categoryFiles: Record<string, DocFile[]>;
+  isOpen?: boolean;
 }
 
-export default function Sidebar({ docs, categories, categoryFiles }: SidebarProps) {
+export default function Sidebar({ docs, categories, categoryFiles, isOpen = true }: SidebarProps) {
   const pathname = usePathname();
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [isLoaded, setIsLoaded] = useState(false);
@@ -72,7 +73,7 @@ export default function Sidebar({ docs, categories, categoryFiles }: SidebarProp
   }
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${!isOpen ? 'sidebar-closed' : ''}`}>
       <nav className="sidebar-nav">
         <div className="nav-section">
           <Link 
@@ -83,10 +84,10 @@ export default function Sidebar({ docs, categories, categoryFiles }: SidebarProp
           </Link>
         </div>
 
-        {docs.filter(d => !d.isIndex).length > 0 && (
+        {docs.filter(d => !d.isIndex && d.filename !== 'default').length > 0 && (
           <div className="nav-section">
             <div className="nav-section-title">Documentation</div>
-            {docs.filter(d => !d.isIndex).map(doc => (
+            {docs.filter(d => !d.isIndex && d.filename !== 'default').map(doc => (
               <Link 
                 key={doc.filename}
                 href={`/docs/${doc.filename}`}
@@ -98,38 +99,51 @@ export default function Sidebar({ docs, categories, categoryFiles }: SidebarProp
           </div>
         )}
 
-        {categories.sort((a, b) => {
-          if (a === 'uncategorized') return -1;
-          if (b === 'uncategorized') return 1;
-          return a.localeCompare(b);
-        }).map(category => (
-          <div key={category} className="nav-section">
-            <button
-              onClick={() => toggleCategory(category)}
-              className="nav-section-title-button"
-              aria-expanded={expandedCategories.has(category)}
-            >
-              <span className="nav-section-toggle">
-                {expandedCategories.has(category) ? '▼' : '▶'}
-              </span>
-              {category.charAt(0).toUpperCase() + category.slice(1)}
-            </button>
-            {expandedCategories.has(category) && (
-              <div className="nav-section-content">
-                {(categoryFiles[category] || []).map(file => (
-                  <Link 
-                    key={file.id}
-                    href={`/docs/${category}/${file.id}`}
-                    className={`nav-link nav-link-sub ${pathname === `/docs/${category}/${file.id}` ? 'active' : ''}`}
-                  >
-                    <span className="nav-link-indent">↳</span>
-                    {file.title.charAt(0).toUpperCase() + file.title.slice(1)}
-                  </Link>
-                ))}
-              </div>
-            )}
+        {categories.length > 0 ? (
+          categories.sort((a, b) => {
+            if (a === 'uncategorized') return -1;
+            if (b === 'uncategorized') return 1;
+            return a.localeCompare(b);
+          }).map(category => (
+            <div key={category} className="nav-section">
+              <button
+                onClick={() => toggleCategory(category)}
+                className="nav-section-title-button"
+                aria-expanded={expandedCategories.has(category)}
+              >
+                <span className="nav-section-toggle">
+                  {expandedCategories.has(category) ? '▼' : '▶'}
+                </span>
+                {category.charAt(0).toUpperCase() + category.slice(1)}
+              </button>
+              {expandedCategories.has(category) && (
+                <div className="nav-section-content">
+                  {(categoryFiles[category] || []).map(file => (
+                    <Link 
+                      key={file.id}
+                      href={`/docs/${category}/${file.id}`}
+                      className={`nav-link nav-link-sub ${pathname === `/docs/${category}/${file.id}` ? 'active' : ''}`}
+                    >
+                      <span className="nav-link-indent">↳</span>
+                      {file.title.charAt(0).toUpperCase() + file.title.slice(1)}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <div className="nav-section">
           </div>
-        ))}
+                )}
+
+        {docs.filter(d => !d.isIndex && d.filename !== 'default').length === 0 && categories.length === 0 && (
+          <div className="nav-section">
+            <div style={{ padding: '1rem 1.25rem', fontSize: '0.875rem', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center' }}>
+              No pages found
+            </div>
+          </div>
+        )}
       </nav>
     </aside>
   );
